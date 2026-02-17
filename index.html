@@ -143,7 +143,7 @@
             </div>
             <div class="mt-auto mb-12 text-white/80">
                 <p class="text-sm font-bold uppercase tracking-widest mb-2">Contact Us</p>
-                <p class="text-xl">+971 50 000 0000</p>
+                <a href="#" class="text-xl phone-link hover:text-black transition-colors">+971 55 741 2771</a>
             </div>
         </div>
     </nav>
@@ -431,7 +431,7 @@
                     <div class="space-y-4">
                         <div class="flex items-center gap-4">
                             <i data-lucide="phone" class="text-black w-5 h-5"></i>
-                            <span>+971 55 741 2771</span>
+                            <a href="#" class="phone-link hover:underline">+971 55 741 2771</a>
                         </div>
                         <div class="flex items-center gap-4">
                             <i data-lucide="mail" class="text-black w-5 h-5"></i>
@@ -612,71 +612,70 @@
         let activeProjectIndex = 0;
         let autoPlay = true;
         let isPaused = false;
+        let carouselInitialized = false; // Add initialization flag
         const carouselContainer = document.getElementById('carousel-container');
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
 
         function renderCarousel() {
-            // Remove existing cards first
-            const existingCards = carouselContainer.querySelectorAll('.project-card');
-            existingCards.forEach(card => card.remove());
-
             const total = projects.length;
 
-            projects.forEach((project, idx) => {
+            // 1. Initialization: Create cards only once
+            if (!carouselInitialized) {
+                carouselContainer.innerHTML = ''; // Clear container
+                projects.forEach((project) => {
+                    const card = document.createElement('div');
+                    card.className = "project-card top-0 md:w-[400px] h-[550px] bg-gray-900 rounded-3xl overflow-hidden shadow-2xl border border-white/10 group cursor-pointer absolute left-0 right-0 margin-0 mx-auto w-full max-w-[350px]";
+                    
+                    // Persistent transition for smooth movement
+                    card.style.transition = 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)'; 
+                    card.style.willChange = 'transform, opacity, filter';
+
+                    card.innerHTML = `
+                        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110" style="background: linear-gradient(to bottom, ${project.color}, #000);">
+                            <div class="absolute inset-0 opacity-30 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay"></div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40"></div>
+                        </div>
+                        <div class="absolute inset-0 p-8 flex flex-col justify-end">
+                            <div class="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                                <p class="text-red-500 font-bold tracking-widest text-xs uppercase mb-2">${project.category}</p>
+                                <h3 class="text-4xl font-black text-white leading-none tracking-tight mb-4 shadow-black drop-shadow-lg">${project.name}</h3>
+                            </div>
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-500"></div>
+                    `;
+                    
+                    carouselContainer.appendChild(card);
+                });
+                carouselInitialized = true;
+                lucide.createIcons();
+            }
+
+            // 2. Update styles for all cards
+            const cards = carouselContainer.querySelectorAll('.project-card');
+            cards.forEach((card, idx) => {
                 let offset = (idx - activeProjectIndex + total) % total;
                 if (offset > total / 2) offset -= total;
 
                 const isActive = offset === 0;
                 const isVisible = Math.abs(offset) <= 2;
 
-                if (!isVisible) return; // Don't render invisible cards
-
                 const translateX = offset * 60; 
                 const scale = isActive ? 1.05 : 0.85;
                 const rotateY = isActive ? 0 : -offset * 15;
                 const zIndex = 50 - Math.abs(offset) * 10;
-                const opacity = isActive ? 1 : Math.max(0.3, 1 - Math.abs(offset) * 0.3);
+                // Fade out distant cards completely
+                const opacity = isVisible ? (isActive ? 1 : Math.max(0.3, 1 - Math.abs(offset) * 0.3)) : 0;
                 const blur = isActive ? 0 : Math.abs(offset) * 2;
                 const pointerEvents = isActive ? 'auto' : 'none';
 
-                const card = document.createElement('div');
-                card.className = "project-card top-0 md:w-[400px] h-[550px] bg-gray-900 rounded-3xl overflow-hidden shadow-2xl border border-white/10 group cursor-pointer absolute left-0 right-0 margin-0 mx-auto w-full max-w-[350px]";
-                
-                // Inline styles for 3D effect
+                // Apply dynamic styles
                 card.style.transform = `translateX(${translateX}%) scale(${scale}) perspective(1000px) rotateY(${rotateY}deg)`;
                 card.style.zIndex = zIndex;
                 card.style.opacity = opacity;
                 card.style.filter = `blur(${blur}px)`;
                 card.style.pointerEvents = pointerEvents;
-                
-                // Smooth and dynamic spring transition
-                card.style.transition = 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)'; 
-                card.style.willChange = 'transform, opacity, filter';
-
-                card.innerHTML = `
-                    <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110" style="background: linear-gradient(to bottom, ${project.color}, #000);">
-                        <div class="absolute inset-0 opacity-30 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay"></div>
-                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40"></div>
-                    </div>
-                    <div class="absolute inset-0 p-8 flex flex-col justify-end">
-                        <div class="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                            <p class="text-red-500 font-bold tracking-widest text-xs uppercase mb-2">${project.category}</p>
-                            <h3 class="text-4xl font-black text-white leading-none tracking-tight mb-4 shadow-black drop-shadow-lg">${project.name}</h3>
-                            <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
-                                <div class="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center">
-                                    <i data-lucide="play" class="w-4 h-4 text-white fill-current ml-0.5"></i>
-                                </div>
-                                <span class="text-white font-medium text-sm">View Case Study</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-500"></div>
-                `;
-                
-                carouselContainer.appendChild(card);
             });
-            lucide.createIcons(); // Refresh icons for new elements
         }
 
         const nextSlide = () => {
@@ -789,6 +788,29 @@
 
         // Initialize all icons on load
         lucide.createIcons();
+
+        // --- 6. Dynamic Phone Links ---
+        function updatePhoneLinks() {
+            const isMobile = window.matchMedia("(max-width: 768px)").matches;
+            const phoneLinks = document.querySelectorAll('.phone-link');
+            const phoneNumber = "971557412771"; // Number without spaces or +
+
+            phoneLinks.forEach(link => {
+                if (isMobile) {
+                    // Mobile: Trigger Phone Call
+                    link.href = `tel:+${phoneNumber}`;
+                    link.removeAttribute('target');
+                } else {
+                    // Desktop/Web: Redirect to WhatsApp
+                    link.href = `https://wa.me/${phoneNumber}`;
+                    link.target = "_blank";
+                }
+            });
+        }
+
+        // Run on load and resize
+        updatePhoneLinks();
+        window.addEventListener('resize', updatePhoneLinks);
 
     </script>
 </body>
